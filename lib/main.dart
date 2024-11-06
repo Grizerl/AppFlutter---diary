@@ -30,4 +30,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-//режим розробника включі дятєл

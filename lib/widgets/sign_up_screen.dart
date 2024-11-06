@@ -48,21 +48,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _signUp() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Створення нового користувача з Firebase Authentication
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _email!,
           password: _password!,
         );
 
-        // Після створення користувача, зберігаємо його дані в Firestore
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
           'name': _name,
           'email': _email,
           'password': _password,
           'createdAt': Timestamp.now(),
         });
-
-        // Якщо все пройшло успішно, повідомляємо користувача про успіх
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign Up Successful')));
 
         Navigator.pushReplacement(

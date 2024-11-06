@@ -259,7 +259,7 @@ class _HomeState extends State<Home> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: "Enter subject",
-                          hintStyle: TextStyle(color: Colors.white70),
+                          hintStyle: const TextStyle(color: Colors.white70),
                           filled: true,
                           fillColor: Colors.grey[800],
                           border: OutlineInputBorder(
@@ -275,7 +275,7 @@ class _HomeState extends State<Home> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: "Enter a rating",
-                          hintStyle: TextStyle(color: Colors.white70),
+                          hintStyle: const TextStyle(color: Colors.white70),
                           filled: true,
                           fillColor: Colors.grey[800],
                           border: OutlineInputBorder(
@@ -297,7 +297,7 @@ class _HomeState extends State<Home> {
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               hintText: "Select Date",
-                              hintStyle: TextStyle(color: Colors.white70),
+                              hintStyle: const TextStyle(color: Colors.white70),
                               filled: true,
                               fillColor: Colors.grey[800],
                               border: OutlineInputBorder(
