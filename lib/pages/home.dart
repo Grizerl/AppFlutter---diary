@@ -59,7 +59,7 @@ class _HomeState extends State<Home> {
       });
 
       setState(() {
-        grades.add(Grade(docRef.id, newGrade.subject, newGrade.date, newGrade.score)); // Set ID after adding
+        grades.add(Grade(docRef.id, newGrade.subject, newGrade.date, newGrade.score));
         _subjectController.clear();
         _scoreController.clear();
         _selectedDate = null;
@@ -67,65 +67,52 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void _menuOpen() {
+  void _menuOpen(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.5,
-          decoration: BoxDecoration(
-            color: Colors.grey[800],
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const ListTile(
-                title: Text(
-                  'Menu',
-                  style: TextStyle(fontSize: 24, color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Options',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-              const Divider(color: Colors.white),
+              const Divider(),
               ListTile(
-                leading: const Icon(
-                  Icons.home,
-                  color: Colors.white,
-                ),
-                title: const Text(
-                  'Back to Home',
-                  style: TextStyle(color: Colors.white),
-                ),
+                leading: const Icon(Icons.home),
+                title: const Text('Drades History'),
+                onTap: () => Navigator.of(context).pop(),
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Log Out'),
                 onTap: () {
-                  Navigator.pop(context); // Close the menu
+                  // Handle 'View Recovery Phrase' action
                 },
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.white,
-                ),
+                leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text(
-                  'Log Out',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_forever,
-                  color: Colors.white,
-                ),
-                title: const Text(
-                  'Delete Account',
-                  style: TextStyle(color: Colors.white),
+                  'Remove Account',
+                  style: TextStyle(color: Colors.red),
                 ),
                 onTap: () {
+                  // Handle 'Remove Wallet' action
                 },
               ),
             ],
@@ -142,7 +129,7 @@ class _HomeState extends State<Home> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != DateTime.now()) {
+    if (picked != null) {
       setState(() {
         _selectedDate = "${picked.toLocal()}".split(' ')[0];
       });
@@ -164,7 +151,7 @@ class _HomeState extends State<Home> {
           IconButton(
             icon: const Icon(Icons.menu_outlined),
             color: Colors.white,
-            onPressed: _menuOpen,
+            onPressed: () => _menuOpen(context),
           ),
         ],
       ),
@@ -176,8 +163,10 @@ class _HomeState extends State<Home> {
             background: Container(color: Colors.red),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) async {
-
-              await FirebaseFirestore.instance.collection('grades').doc(grades[index].id).delete();
+              await FirebaseFirestore.instance
+                  .collection('grades')
+                  .doc(grades[index].id)
+                  .delete();
 
               setState(() {
                 grades.removeAt(index);
@@ -211,7 +200,10 @@ class _HomeState extends State<Home> {
                     color: Colors.deepOrange,
                   ),
                   onPressed: () async {
-                    await FirebaseFirestore.instance.collection('grades').doc(grades[index].id).delete();
+                    await FirebaseFirestore.instance
+                        .collection('grades')
+                        .doc(grades[index].id)
+                        .delete();
 
                     setState(() {
                       grades.removeAt(index);
@@ -234,7 +226,29 @@ class _HomeState extends State<Home> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Center(child: Text('Add Rating')),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                backgroundColor: Colors.grey[850],
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Add Rating',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
                 content: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -242,21 +256,56 @@ class _HomeState extends State<Home> {
                     children: [
                       TextField(
                         controller: _subjectController,
-                        decoration: const InputDecoration(hintText: "Enter subject"),
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: "Enter subject",
+                          hintStyle: TextStyle(color: Colors.white70),
+                          filled: true,
+                          fillColor: Colors.grey[800],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
                       ),
+                      const SizedBox(height: 10),
                       TextField(
                         controller: _scoreController,
-                        decoration: const InputDecoration(hintText: "Enter a rating"),
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: "Enter a rating",
+                          hintStyle: TextStyle(color: Colors.white70),
+                          filled: true,
+                          fillColor: Colors.grey[800],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
                         keyboardType: TextInputType.number,
                       ),
                       const SizedBox(height: 10),
-                      TextButton(
-                        onPressed: () => _selectDate(context),
-                        child: Text(
-                          _selectedDate == null ? 'Select Date' : 'Selected Date: $_selectedDate',
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            fontSize: 16,
+                      GestureDetector(
+                        onTap: () => _selectDate(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            controller: TextEditingController(
+                              text: _selectedDate ?? 'Select Date',
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: "Select Date",
+                              hintStyle: TextStyle(color: Colors.white70),
+                              filled: true,
+                              fillColor: Colors.grey[800],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
                           ),
                         ),
                       ),
@@ -264,15 +313,28 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _addGrade();
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Add'),
+                  Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[900],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      onPressed: () {
+                        _addGrade();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        'Add',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
                   ),
                 ],
               );
+
             },
           );
         },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_diary/pages/home.dart';
 import 'package:flutter_diary/widgets/sign_in_screen.dart';
 
 void main() async {
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'My Firebase App',
-      home: SignInScreen(),
+      home: Home(),
     );
   }
 }
