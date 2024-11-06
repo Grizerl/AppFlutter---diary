@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_diary/widgets/sign_in_screen.dart';
+import 'package:intl/intl.dart';
 
 class Grade {
   final String id;
@@ -21,6 +25,7 @@ class _HomeState extends State<Home> {
   List<Grade> grades = [];
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _scoreController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
   String? _selectedDate;
 
   @override
@@ -95,26 +100,63 @@ class _HomeState extends State<Home> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.home),
-                title: const Text('Drades History'),
+                title: const Text('Grades History'),
                 onTap: () => Navigator.of(context).pop(),
               ),
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text('Log Out'),
-                onTap: () {
-                  // Handle 'View Recovery Phrase' action
+                onTap: () async {
+                  // Sign out from Firebase Authentication
+                  await FirebaseAuth.instance.signOut();
+
+                  // Navigate back to the SignInScreen (login screen)
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignInScreen()),
+                  );
                 },
               ),
+
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text(
                   'Remove Account',
                   style: TextStyle(color: Colors.red),
                 ),
-                onTap: () {
-                  // Handle 'Remove Wallet' action
+                onTap: () async {
+                  try {
+                    // Log the authentication state to debug
+                    User? user = FirebaseAuth.instance.currentUser;
+                    print('Current user: $user');
+
+                    if (user != null) {
+                      // Proceed with deletion
+                      await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+                      await user.delete();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Account Deleted')),
+                      );
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignInScreen()),
+                      );
+                    } else {
+                      // No user logged in
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No user is logged in')),
+                      );
+                    }
+                  } catch (e) {
+                    // Error handling
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                    print('Error: $e');
+                  }
                 },
-              ),
+              )
             ],
           ),
         );
@@ -122,16 +164,18 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  void _selectDate(BuildContext context) async {
+    DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null) {
+
+    if (selectedDate != null && selectedDate != _selectedDate) {
       setState(() {
-        _selectedDate = "${picked.toLocal()}".split(' ')[0];
+        _selectedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+        _dateController.text = _selectedDate ?? "";
       });
     }
   }
@@ -221,6 +265,7 @@ class _HomeState extends State<Home> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange[900],
+        foregroundColor: Colors.white,
         onPressed: () {
           showDialog(
             context: context,
@@ -234,7 +279,7 @@ class _HomeState extends State<Home> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Add Rating',
+                      'Create Estimate',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -284,19 +329,18 @@ class _HomeState extends State<Home> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),
-                        keyboardType: TextInputType.number,
+                        keyboardType: TextInputType.number, // Allows only numbers
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly], // Restrict input to digits
                       ),
                       const SizedBox(height: 10),
                       GestureDetector(
                         onTap: () => _selectDate(context),
                         child: AbsorbPointer(
                           child: TextField(
-                            controller: TextEditingController(
-                              text: _selectedDate ?? 'Select Date',
-                            ),
+                            controller: _dateController,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: "Select Date",
+                              hintText: _selectedDate ?? "Select Date", // Display selected date or "Select Date"
                               hintStyle: const TextStyle(color: Colors.white70),
                               filled: true,
                               fillColor: Colors.grey[800],
@@ -309,36 +353,26 @@ class _HomeState extends State<Home> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _addGrade,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange[900],
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child: const Text(
+                          'Add Rating',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                actions: [
-                  Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange[900],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      onPressed: () {
-                        _addGrade();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text(
-                        'Add',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ],
               );
-
             },
           );
         },
-        child: const Icon(Icons.add_box, color: Colors.white),
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_diary/widgets/sign_up_screen.dart';
 import 'package:flutter_diary/pages/home.dart';
@@ -12,6 +14,8 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -32,6 +36,50 @@ class _SignInScreenState extends State<SignInScreen> {
       return 'The password must contain at least 7 characters';
     }
     return null;
+  }
+
+  Future<void> _signIn() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        // Get email and password from controllers
+        String email = _emailController.text;
+        String password = _passwordController.text;
+
+        print('Signing in with email: $email');
+        print('Password: $password');
+
+        // Sign in with Firebase Authentication
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // Check if the user exists in the Firestore database
+        User? user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+          if (userDoc.exists) {
+            // User exists in the database
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Home()),
+            );
+          } else {
+            // User does not exist in the database
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('User does not exist in the database')),
+            );
+          }
+        }
+      } catch (e) {
+        // Print detailed error for debugging
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+        print('Error details: $e');
+      }
+    }
   }
 
   @override
@@ -98,6 +146,7 @@ class _SignInScreenState extends State<SignInScreen> {
                             children: <Widget>[
                               // Email Field
                               TextFormField(
+                                controller: _emailController,
                                 decoration: const InputDecoration(
                                   hintText: "Email address",
                                   hintStyle: TextStyle(color: Colors.grey),
@@ -110,6 +159,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                               // Password Field
                               TextFormField(
+                                controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
                                 decoration: InputDecoration(
                                   hintText: "Password",
@@ -138,24 +188,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                         // Login Button
                         GestureDetector(
-                          onTap: () async {
-                            if (_formKey.currentState!.validate()) {
-                              try {
-                                // Authenticate user here
-                                // Assuming authentication is successful:
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const Home(),
-                                  ),
-                                );
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error: $e')),
-                                );
-                              }
-                            }
-                          },
+                          onTap: _signIn,
                           child: Container(
                             height: 50,
                             margin: const EdgeInsets.symmetric(horizontal: 50),
