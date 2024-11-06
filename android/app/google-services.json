@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "619956224411",
+    "project_id": "flutterdiary-b41ad",
+    "storage_bucket": "flutterdiary-b41ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:619956224411:android:6ea4f4a50c3bece771613e",
+        "android_client_info": {
+          "package_name": "com.example.flutter_diary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi5zBOoPOpol7IwPJD9wrEAW5LnPo59r8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
