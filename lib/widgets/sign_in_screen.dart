@@ -54,7 +54,6 @@ class _SignInScreenState extends State<SignInScreen> {
           password: password,
         );
 
-        // Check if the user exists in the Firestore database
         User? user = FirebaseAuth.instance.currentUser;
         if (user != null) {
           DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
@@ -77,7 +76,6 @@ class _SignInScreenState extends State<SignInScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
-        print('Error details: $e');
       }
     }
   }

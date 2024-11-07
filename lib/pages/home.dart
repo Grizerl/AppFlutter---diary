@@ -109,8 +109,6 @@ class _HomeState extends State<Home> {
                 onTap: () async {
                   // Sign out from Firebase Authentication
                   await FirebaseAuth.instance.signOut();
-
-                  // Navigate back to the SignInScreen (login screen)
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const SignInScreen()),
@@ -186,14 +184,18 @@ class _HomeState extends State<Home> {
       backgroundColor: Colors.grey[850],
       appBar: AppBar(
         title: const Text(
-          "My Grade Diary",
-          style: TextStyle(color: Colors.white),
+          "Grades Overview",
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.orange[900],
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu_outlined),
+            icon: const Icon(Icons.menu_open),
             color: Colors.white,
             onPressed: () => _menuOpen(context),
           ),
@@ -374,6 +376,7 @@ class _HomeState extends State<Home> {
         },
         child: const Icon(Icons.add),
       ),
+
     );
   }
 }
